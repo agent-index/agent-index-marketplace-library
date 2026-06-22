@@ -1,0 +1,63 @@
+---
+name: find-doc
+type: skill
+version: 1.0.0
+collection: library
+description: The primary read path. Query the catalog (title, tags, summary, type) for docs on a topic, then open only the matching docs the member is allowed to read and summarize them. Private docs the member can't read surface title-only with a request-access affordance.
+stateful: false
+dependencies:
+  skills: []
+  tasks: []
+external_dependencies:
+  - Remote filesystem access
+reads_from: "/shared/library-index/, /shared/library/, id:{member_folder_id}/library/"
+writes_to: null
+---
+
+## About This Skill
+
+Find Document is the **primary read path**. It answers "what do we have on X" / "how do I Y" by querying the catalog's metadata (title, tags, summary, type — enriched fields exist for public docs; private docs match on title only), ranking the candidates, then opening **only** the matching docs the member is allowed to read and summarizing them. It never opens docs the member can't read; those surface title-only with a request-access affordance.
+
+This metadata-first approach is what lets the library scale past a few hundred docs — Claude routes to 2–3 candidates instead of reading everything.
+
+---
+
+## Configuration
+`library_index_path` (from setup responses).
+
+---
+
+## Workflow
+
+### Step 1 — Load
+Read setup responses; verify auth. Read `tree.json` and the per-doc pointers.
+
+### Step 2 — Match
+Score pointers against the member's query over `title`, `tags`, `summary`, and `type` (public docs) and `title` (private docs). Rank; keep the top few candidates.
+
+### Step 3 — Open only what's readable
+For each top candidate that is `org_public`, or `private_shared`/`private` **and readable by this member** (attempt the read; structural privacy means an ungranted private doc returns PATH_NOT_FOUND), open `doc.md` and read it. Do not open more docs than needed to answer.
+
+### Step 4 — Answer
+Summarize the relevant doc(s), cite each by title and group path, and link/point to them. If a strong title match is a private doc the member **can't** read, say so: "There's a private doc titled `{title}` owned by {owner} that looks relevant — you can ask for access with `@ai:request-access`." Never guess its contents.
+
+### Step 5 — Offer next steps
+Offer to open a specific doc in full, browse the surrounding group, or request access to a gated match.
+
+---
+
+## Directives
+
+- Metadata-first: route via the catalog; open the minimum set of bodies needed.
+- Only read docs the member is authorized to read; never bypass privacy.
+- Private, unreadable matches → title-only + request-access; never fabricate or infer content.
+- Cite docs by title + group path; prefer the org-public canonical doc when several match.
+- Use `aifs_*` reads only; this skill writes nothing.
+
+---
+
+## Error Handling
+
+- Auth/connectivity → halt + `@ai:member-bootstrap`.
+- A candidate read returns PATH_NOT_FOUND (private, ungranted) → treat as not-readable; surface title-only; continue with other candidates.
+- No matches → say so plainly and offer `@ai:browse-library` to explore the taxonomy.

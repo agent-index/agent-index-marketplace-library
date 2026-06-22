@@ -1,0 +1,11 @@
+{
+  "policy": "locked",
+  "types": [
+    "HowTo",
+    "FAQ",
+    "Tutorial",
+    "Research",
+    "Runbook",
+    "Reference"
+  ]
+}

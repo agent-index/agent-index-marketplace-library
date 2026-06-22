@@ -1,0 +1,20 @@
+{
+  "version": "1.0",
+  "description": "Declares the ADDITIVE collaborative grants the library collection needs. Read by install-collection Step 5.5 and provisioned via the permission-change-helper skill (admin reviews + Accepts). Never applied by aifs_share directly. {param} placeholders resolve at provisioning from collection-setup-responses.md and org-config.json. This file declares GRANTS only (op:share). Per-document privacy is NOT expressed here \u2014 private docs live in their owner's My Drive and are shared by member-applied grants at runtime (set-doc-visibility).",
+  "acls": [
+    {
+      "path": "{library_path}/",
+      "recipient": "{all_members_group}",
+      "role": "writer",
+      "inherit": true,
+      "rationale": "The public-doc commons. Every member reads any public doc and may collaboratively edit (writes are changelog-attributed). Public doc folders created under here inherit the grant."
+    },
+    {
+      "path": "{library_index_path}/",
+      "recipient": "{all_members_group}",
+      "role": "writer",
+      "inherit": true,
+      "rationale": "The always-org-public catalog (tree.json, per-doc pointers, doc-types.json). Members must append/update pointers to register their own docs and edit the taxonomy, so the index is writable by all. Title-only metadata for private docs lives here by design (decision 5/6)."
+    }
+  ]
+}

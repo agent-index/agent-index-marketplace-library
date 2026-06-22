@@ -1,0 +1,34 @@
+{
+  "name": "create-doc",
+  "type": "task",
+  "display_name": "Create Document",
+  "collection": "library",
+  "collection_version": "1.0.0",
+  "version": "1.0.0",
+  "eol_date": null,
+  "eol_warning_days": 60,
+  "stateful": true,
+  "produces_artifacts": false,
+  "produces_shared_artifacts": true,
+  "setup_template": "create-doc-setup.md",
+  "dependency_status": "complete",
+  "missing_dependencies": [],
+  "parameter_provenance": {
+    "library_path": "org-mandated",
+    "library_index_path": "org-mandated",
+    "library_default_visibility": "org-mandated",
+    "library_default_review_cadence_days": "org-mandated",
+    "doc_type_policy": "org-mandated",
+    "doc_types": "org-mandated"
+  },
+  "dependencies": {
+    "skills": [],
+    "tasks": []
+  },
+  "external_dependencies": [
+    "Remote filesystem access"
+  ],
+  "optional_external_dependencies": [],
+  "reads_from": "/shared/library-index/",
+  "writes_to": "/shared/library/, id:{member_folder_id}/library/, /shared/library-index/"
+}

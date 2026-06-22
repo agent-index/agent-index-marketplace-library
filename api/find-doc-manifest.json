@@ -1,0 +1,27 @@
+{
+  "name": "find-doc",
+  "type": "skill",
+  "display_name": "Find Document",
+  "collection": "library",
+  "collection_version": "1.0.0",
+  "version": "1.0.0",
+  "eol_date": null,
+  "eol_warning_days": 60,
+  "stateful": false,
+  "setup_template": "find-doc-setup.md",
+  "dependency_status": "complete",
+  "missing_dependencies": [],
+  "parameter_provenance": {
+    "library_index_path": "org-mandated"
+  },
+  "dependencies": {
+    "skills": [],
+    "tasks": []
+  },
+  "external_dependencies": [
+    "Remote filesystem access"
+  ],
+  "optional_external_dependencies": [],
+  "reads_from": "/shared/library-index/, /shared/library/, id:{member_folder_id}/library/",
+  "writes_to": null
+}

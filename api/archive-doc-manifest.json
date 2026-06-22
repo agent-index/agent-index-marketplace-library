@@ -1,0 +1,30 @@
+{
+  "name": "archive-doc",
+  "type": "task",
+  "display_name": "Archive Document",
+  "collection": "library",
+  "collection_version": "1.0.0",
+  "version": "1.0.0",
+  "eol_date": null,
+  "eol_warning_days": 60,
+  "stateful": true,
+  "produces_artifacts": false,
+  "produces_shared_artifacts": true,
+  "setup_template": "archive-doc-setup.md",
+  "dependency_status": "complete",
+  "missing_dependencies": [],
+  "parameter_provenance": {
+    "library_path": "org-mandated",
+    "library_index_path": "org-mandated"
+  },
+  "dependencies": {
+    "skills": [],
+    "tasks": []
+  },
+  "external_dependencies": [
+    "Remote filesystem access"
+  ],
+  "optional_external_dependencies": [],
+  "reads_from": "/shared/library/, id:{member_folder_id}/library/, /shared/library-index/",
+  "writes_to": "/shared/library/, id:{member_folder_id}/library/, /shared/library-index/"
+}

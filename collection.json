@@ -1,0 +1,366 @@
+{
+  "name": "library",
+  "display_name": "Library",
+  "version": "1.0.0",
+  "description": "Hierarchical documentation library \u2014 the org's Confluence replacement. Named groups of documents with unlimited-depth sub-groups form an always-org-public taxonomy; document TITLES and tree placement are visible to every member, while document CONTENT is org-public by default or can be set private (owner + explicit grant list, content held in the owner's My Drive) at any time including creation. Discovery runs off an always-public catalog (/shared/library-index/: tree.json, per-doc pointers, doc-types.json) decoupled from content ACLs, so private docs still appear as titles. Rich retrieval metadata (type, tags, summary) is indexed for PUBLIC docs only and is stripped when a doc goes private. v1.0.0: groups, docs-with-images, public/private visibility with member-applied grants, governed doc-type vocabulary (admin locked/open), staleness/review tracking (180-day default), comms-channel access requests. Reuses the projects 4.0 two-tier + pointer-index patterns. Requires agent-index-core 3.9.0+, adapter 2.5.0+, permission-change-helper 0.4.1+.",
+  "author": "agent-index",
+  "license": "open",
+  "category": "knowledge-management",
+  "agent_index_min_version": "3.9.0",
+  "api": [
+    {
+      "name": "create-group",
+      "triggers": [
+        {
+          "phrase": "create a docs category",
+          "capability": "create-group",
+          "description": "Create a new top-level documentation group"
+        },
+        {
+          "phrase": "new top-level group",
+          "capability": "create-group",
+          "description": "Start a new top-level category in the library"
+        },
+        {
+          "phrase": "add a sub-group",
+          "capability": "create-group",
+          "description": "Create a nested group under an existing group"
+        },
+        {
+          "phrase": "create a section in the library",
+          "capability": "create-group",
+          "description": "Add a new group to the documentation taxonomy"
+        }
+      ]
+    },
+    {
+      "name": "create-doc",
+      "triggers": [
+        {
+          "phrase": "write a how-to",
+          "capability": "create-doc",
+          "description": "Create a new document in the library"
+        },
+        {
+          "phrase": "add an FAQ",
+          "capability": "create-doc",
+          "description": "Create a new FAQ document"
+        },
+        {
+          "phrase": "new doc in",
+          "capability": "create-doc",
+          "description": "Create a document under a chosen group"
+        },
+        {
+          "phrase": "create a document",
+          "capability": "create-doc",
+          "description": "Add a new document to the library"
+        },
+        {
+          "phrase": "add a doc to the library",
+          "capability": "create-doc",
+          "description": "Create and file a new document"
+        }
+      ]
+    },
+    {
+      "name": "edit-doc",
+      "triggers": [
+        {
+          "phrase": "update the doc",
+          "capability": "edit-doc",
+          "description": "Edit an existing library document"
+        },
+        {
+          "phrase": "edit the runbook",
+          "capability": "edit-doc",
+          "description": "Modify a document's body or metadata"
+        },
+        {
+          "phrase": "revise the document",
+          "capability": "edit-doc",
+          "description": "Update a library document you can write"
+        }
+      ]
+    },
+    {
+      "name": "move-item",
+      "triggers": [
+        {
+          "phrase": "move the doc under",
+          "capability": "move-item",
+          "description": "Reparent a document to a different group"
+        },
+        {
+          "phrase": "move the group",
+          "capability": "move-item",
+          "description": "Reparent a group within the taxonomy"
+        },
+        {
+          "phrase": "reorganize the library",
+          "capability": "move-item",
+          "description": "Move documents or groups in the tree"
+        }
+      ]
+    },
+    {
+      "name": "rename-item",
+      "triggers": [
+        {
+          "phrase": "rename the group",
+          "capability": "rename-item",
+          "description": "Change a group's display name"
+        },
+        {
+          "phrase": "rename the doc",
+          "capability": "rename-item",
+          "description": "Change a document's title"
+        }
+      ]
+    },
+    {
+      "name": "set-doc-visibility",
+      "triggers": [
+        {
+          "phrase": "make the doc private",
+          "capability": "set-doc-visibility",
+          "description": "Restrict a document to owner + granted members"
+        },
+        {
+          "phrase": "publish the doc",
+          "capability": "set-doc-visibility",
+          "description": "Make a private document org-public"
+        },
+        {
+          "phrase": "share the doc with",
+          "capability": "set-doc-visibility",
+          "description": "Grant a named member read access to a private doc"
+        },
+        {
+          "phrase": "change who can see the doc",
+          "capability": "set-doc-visibility",
+          "description": "Adjust a document's visibility or grants"
+        }
+      ]
+    },
+    {
+      "name": "browse-library",
+      "triggers": [
+        {
+          "phrase": "what docs do we have",
+          "capability": "browse-library",
+          "description": "Show the library taxonomy and document titles"
+        },
+        {
+          "phrase": "show the library",
+          "capability": "browse-library",
+          "description": "Render the documentation tree"
+        },
+        {
+          "phrase": "browse the library",
+          "capability": "browse-library",
+          "description": "Navigate the documentation taxonomy"
+        },
+        {
+          "phrase": "what's under",
+          "capability": "browse-library",
+          "description": "List the docs and sub-groups under a group"
+        }
+      ]
+    },
+    {
+      "name": "find-doc",
+      "triggers": [
+        {
+          "phrase": "find docs on",
+          "capability": "find-doc",
+          "description": "Search the library and summarize matching docs"
+        },
+        {
+          "phrase": "what do we have about",
+          "capability": "find-doc",
+          "description": "Find documentation on a topic"
+        },
+        {
+          "phrase": "how do I",
+          "capability": "find-doc",
+          "description": "Find a how-to or runbook and summarize it"
+        },
+        {
+          "phrase": "look up in the library",
+          "capability": "find-doc",
+          "description": "Search the documentation library"
+        }
+      ]
+    },
+    {
+      "name": "request-access",
+      "triggers": [
+        {
+          "phrase": "request access to",
+          "capability": "request-access",
+          "description": "Ask a private doc's owner for read access"
+        },
+        {
+          "phrase": "ask for access to the doc",
+          "capability": "request-access",
+          "description": "Send an access request to the doc owner"
+        }
+      ]
+    },
+    {
+      "name": "archive-doc",
+      "triggers": [
+        {
+          "phrase": "archive the doc",
+          "capability": "archive-doc",
+          "description": "Soft-retire a document"
+        },
+        {
+          "phrase": "retire the document",
+          "capability": "archive-doc",
+          "description": "Mark a document archived"
+        }
+      ]
+    },
+    {
+      "name": "review-report",
+      "triggers": [
+        {
+          "phrase": "what docs are stale",
+          "capability": "review-report",
+          "description": "List documents overdue for review"
+        },
+        {
+          "phrase": "what's due for review",
+          "capability": "review-report",
+          "description": "Show documents past their review date"
+        },
+        {
+          "phrase": "library review report",
+          "capability": "review-report",
+          "description": "Report on documentation freshness"
+        }
+      ]
+    },
+    {
+      "name": "manage-doc-types",
+      "triggers": [
+        {
+          "phrase": "lock down doc types",
+          "capability": "manage-doc-types",
+          "description": "Restrict doc types to admin-approved values"
+        },
+        {
+          "phrase": "allow members to add doc types",
+          "capability": "manage-doc-types",
+          "description": "Open the doc-type vocabulary to members"
+        },
+        {
+          "phrase": "add a doc type",
+          "capability": "manage-doc-types",
+          "description": "Add a new document type to the vocabulary"
+        },
+        {
+          "phrase": "list doc types",
+          "capability": "manage-doc-types",
+          "description": "Show the configured document types"
+        }
+      ]
+    },
+    {
+      "name": "library-tutorial",
+      "triggers": [
+        {
+          "phrase": "how does the library work",
+          "capability": "library-tutorial",
+          "description": "Learn how to use the documentation library"
+        }
+      ]
+    }
+  ],
+  "provides": [
+    {
+      "capability": "documentation-library",
+      "capability_version": "1.0.0",
+      "operations": {
+        "create-group": {
+          "implemented_by": "create-group",
+          "type": "task"
+        },
+        "create-doc": {
+          "implemented_by": "create-doc",
+          "type": "task"
+        },
+        "edit-doc": {
+          "implemented_by": "edit-doc",
+          "type": "task"
+        },
+        "move-item": {
+          "implemented_by": "move-item",
+          "type": "task"
+        },
+        "rename-item": {
+          "implemented_by": "rename-item",
+          "type": "task"
+        },
+        "set-doc-visibility": {
+          "implemented_by": "set-doc-visibility",
+          "type": "task"
+        },
+        "browse-library": {
+          "implemented_by": "browse-library",
+          "type": "skill"
+        },
+        "find-doc": {
+          "implemented_by": "find-doc",
+          "type": "skill"
+        },
+        "request-access": {
+          "implemented_by": "request-access",
+          "type": "task"
+        },
+        "archive-doc": {
+          "implemented_by": "archive-doc",
+          "type": "task"
+        },
+        "review-report": {
+          "implemented_by": "review-report",
+          "type": "skill"
+        },
+        "manage-doc-types": {
+          "implemented_by": "manage-doc-types",
+          "type": "task"
+        },
+        "library-tutorial": {
+          "implemented_by": "library-tutorial",
+          "type": "skill"
+        }
+      }
+    }
+  ],
+  "dependencies": [],
+  "external_dependencies": [
+    {
+      "system": "Remote filesystem access",
+      "access_required": "Read/write to /shared/library/ and /shared/library-index/, and to the owner's My Drive for private docs, via aifs_* tools",
+      "contact": "org admin",
+      "required": true
+    },
+    {
+      "system": "permission-change-helper",
+      "access_required": "Member-applied additive grants on private document folders (binary 0.4.1+)",
+      "contact": "org admin",
+      "required": true
+    },
+    {
+      "system": "Slack / Microsoft Teams / Discord / email (conditional)",
+      "access_required": "Deliver access-request notifications via the org's configured comms channel",
+      "contact": "org admin",
+      "required": false
+    }
+  ],
+  "eol_date": null,
+  "marketplace_url": "https://github.com/agent-index/agent-index-marketplace-library",
+  "support_url": "https://agent-index.ai/support"
+}

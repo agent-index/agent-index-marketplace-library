@@ -1,0 +1,32 @@
+{
+  "name": "request-access",
+  "type": "task",
+  "display_name": "Request Access",
+  "collection": "library",
+  "collection_version": "1.0.0",
+  "version": "1.0.0",
+  "eol_date": null,
+  "eol_warning_days": 60,
+  "stateful": false,
+  "produces_artifacts": false,
+  "produces_shared_artifacts": false,
+  "setup_template": "request-access-setup.md",
+  "dependency_status": "complete",
+  "missing_dependencies": [],
+  "parameter_provenance": {
+    "library_index_path": "org-mandated",
+    "access_request_channel": "org-mandated"
+  },
+  "dependencies": {
+    "skills": [],
+    "tasks": []
+  },
+  "external_dependencies": [
+    "Remote filesystem access"
+  ],
+  "optional_external_dependencies": [
+    "Slack / Microsoft Teams / Discord / email"
+  ],
+  "reads_from": "/shared/library-index/",
+  "writes_to": null
+}
