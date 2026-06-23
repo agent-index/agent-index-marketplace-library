@@ -1,7 +1,7 @@
 {
   "name": "library",
   "display_name": "Library",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Hierarchical documentation library \u2014 the org's Confluence replacement. Named groups of documents with unlimited-depth sub-groups form an always-org-public taxonomy; document TITLES and tree placement are visible to every member, while document CONTENT is org-public by default or can be set private (owner + explicit grant list, content held in the owner's My Drive) at any time including creation. Discovery runs off an always-public catalog (/shared/library-index/: tree.json, per-doc pointers, doc-types.json) decoupled from content ACLs, so private docs still appear as titles. Rich retrieval metadata (type, tags, summary) is indexed for PUBLIC docs only and is stripped when a doc goes private. v1.0.0: groups, docs-with-images, public/private visibility with member-applied grants, governed doc-type vocabulary (admin locked/open), staleness/review tracking (180-day default), comms-channel access requests. Reuses the projects 4.0 two-tier + pointer-index patterns. Requires agent-index-core 3.9.0+, adapter 2.5.0+, permission-change-helper 0.4.1+.",
   "author": "agent-index",
   "license": "open",

@@ -1,7 +1,7 @@
 ---
 name: set-doc-visibility
 type: task
-version: 1.0.0
+version: 1.0.1
 collection: library
 description: Change a document's visibility and grants — make a public doc private, publish a private doc, or share/unshare a private doc with named members. Owns the title-leak warning (going private) and the strip/enrich rule (content-derived metadata exists in the catalog only while a doc is public). Private grants are member-applied via permission-change-helper, owner-Accept, hard-gated; no owner-bypass.
 stateful: true
@@ -47,20 +47,20 @@ Read setup responses and local `member-index.json` (`member_hash`, `member_folde
 
 ### Step 3A — Make private (public → private)
 1. **Title-leak gate first:** render the blocking warning (title stays org-public) and offer to rename now.
-2. **Relocate** the doc folder from `{library_path}/{path}/{slug}/` to `id:{member_folder_id}/library/{slug}/` (`aifs_copy` then delete-source; verify the destination before deleting). The new home is private by default — no `all@`, no restriction primitive needed.
+2. **Relocate** the doc folder from `{library_path}/{path}/{slug}/` to `id:{member_folder_id}/library/{slug}/` using the **file-level relocation procedure** (see Directives — `aifs_copy` is single-file and will not create the destination parent or copy a whole folder in one call). The new home is private by default — no `all@`, no restriction primitive needed.
 3. **Strip** `type`/`tags`/`summary` from `meta.json`'s pointer-facing copy and from the catalog pointer; set `scope: "private"`, replace `location` path with `folder_id` (stat the new folder). Write + JSON-parse-verify.
 4. Confirm: "`{title}` is now private. Its title still shows in the tree; contents are visible only to you until you share it."
 
 ### Step 3B — Make public (private → public)
-1. **Relocate** the folder from the owner's My Drive into `{library_path}/{group-path}/{slug}/` (it inherits the commons `all@` reader+writer — additive, structural).
+1. **Relocate** the folder from the owner's My Drive into `{library_path}/{group-path}/{slug}/` using the **file-level relocation procedure** (see Directives). Once in the commons it inherits the `all@` reader+writer — additive, structural.
 2. **Enrich:** prompt the owner to confirm/supply `summary`, `tags`, and `type` (validate `type` against `doc-types.json`). Write them into `meta.json` and the pointer; set `scope: "org_public"`, replace `folder_id` with the commons `location` path. Write + verify.
 3. Any prior private grants are now moot (the doc is org-readable) — they can be left or revoked harmlessly.
 4. Confirm: "`{title}` is now org-public and discoverable via '@ai:find-doc'."
 
 ### Step 3C — Share with people (private doc)
-1. `aifs_stat` the doc folder → `folder_id` (record in `meta.json`).
+1. `aifs_stat` the doc folder → `folder_id` (record in `meta.json`). **This step is mandatory:** the helper rejects a My-Drive *path* (e.g. `id:{member_folder_id}/library/{slug}`) and requires the folder's resolved Drive ID as a bare `id:{folder_id}`.
 2. Collect people + level (read | collaborate); resolve against `members-registry.json`; drop unresolvables with notice.
-3. ONE `permission-change-helper` spec: `op: "share"` per grant on resource **`id:{folder_id}`** (bare id), role `reader` (read) or `writer` (collaborate). **Owner Accepts.** **HARD GATE:** proceed only on outcome `"applied"` OR an independent `aifs_get_permissions` confirming each grant.
+3. ONE `permission-change-helper` spec: `op: "share"` per grant on resource **`id:{folder_id}`** (the bare Drive ID from step 1, NOT a path), role `reader` (read) or `writer` (collaborate). **Owner Accepts.** **HARD GATE:** proceed only on outcome `"applied"` OR an independent `aifs_get_permissions` confirming each grant.
 4. After the gate passes, set the pointer `scope: "private_shared"` (the grant list itself lives in the Drive ACL — `aifs_get_permissions` is the source of truth for *who*; the pointer records only *that* it's shared). Write + verify.
 5. Confirm who can read, who can write, and that the title was already org-visible.
 
@@ -77,13 +77,4 @@ ONE spec `op: "unshare"` per grantee on `id:{folder_id}`; owner Accepts; hard ga
 - Always render the title-leak gate before a doc becomes private.
 - All grants via `permission-change-helper`, owner **Accepts**, **hard-gated** before any pointer scope change. Never write the pointer scope before the gate passes.
 - Verify relocations (destination present, source removed) before updating `location`.
-- Use `aifs_*` only; JSON-parse-verify every catalog write.
-
----
-
-## Error Handling
-
-- Auth/connectivity → halt + `@ai:member-bootstrap`.
-- Grant not confirmed by the hard gate → do NOT update the pointer scope; report the grant as not applied and offer retry (helper ≤0.4.0 race; 0.4.1 fixed; fallback to independent `get_permissions`).
-- Relocation half-fails → surface the partial state; never point `location` at a folder that isn't there; never delete the source before the destination is verified.
-- Strip step fails on going-private → **treat as privacy-critical**: do not consider the doc private until the enriched fields are confirmed removed from the org-public pointer; retry or halt loudly.
+- **File-level relocation procedure** (going private and going public both use it): `aifs_copy` copies ONE file and will NOT create the destination's parent folder. So to move a doc folder across the commons ↔ My-Drive boundary: (1) create the destination folder (e.g. `aifs_write` a placeholder, or write the first file);

@@ -1,5 +1,12 @@
 # Changelog — Library
 
+## 1.0.1 — 2026-06-23
+
+Patch: execution details in `set-doc-visibility` confirmed against the live gdrive adapter during Phase L. No behavior/model change.
+
+- **Cross-drive relocation is file-level.** `aifs_copy` copies a single file and will not create the destination parent or move a whole folder in one call. make-private / make-public now spell out the procedure: create the destination folder, copy `doc.md` + `meta.json` + `assets/*` individually, verify, then delete the source.
+- **Grants require a stat'd Drive ID.** `permission-change-helper` rejects a My-Drive *path* resource; share/unshare must `aifs_stat` the doc folder first and pass the bare `id:{folder_id}`.
+
 ## 1.0.0 — 2026-06-22
 
 Initial release. New collection: a hierarchical documentation library replacing Confluence.
