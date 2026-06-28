@@ -1,7 +1,7 @@
 ---
 name: find-doc
 type: skill
-version: 1.0.0
+version: 1.1.0
 collection: library
 description: The primary read path. Query the catalog (title, tags, summary, type) for docs on a topic, then open only the matching docs the member is allowed to read and summarize them. Private docs the member can't read surface title-only with a request-access affordance.
 stateful: false
@@ -36,7 +36,11 @@ Read setup responses; verify auth. Read `tree.json` and the per-doc pointers.
 Score pointers against the member's query over `title`, `tags`, `summary`, and `type` (public docs) and `title` (private docs). Rank; keep the top few candidates.
 
 ### Step 3 — Open only what's readable
-For each top candidate that is `org_public`, or `private_shared`/`private` **and readable by this member** (attempt the read; structural privacy means an ungranted private doc returns PATH_NOT_FOUND), open `doc.md` and read it. Do not open more docs than needed to answer.
+For each top candidate, resolve the read target from its pointer:
+- **`org_public`** → read `doc.md` at the commons `location` path.
+- **`private`/`private_shared`** → the doc lives in the **owner's** personal drive. Build the **cross-drive anchor** `id:{item_drive_id}:{folder_id}/doc.md` when the pointer carries `item_drive_id` (C.1.3 `crossdriveread`); fall back to the bare `id:{folder_id}/doc.md` only for older pointers that predate `item_drive_id`. A bare anchor for a doc on another member's drive resolves against *this* member's drive and returns `PATH_NOT_FOUND` even when the grant exists — so prefer the qualified anchor whenever it's available (this is the fix for "discoverable but unopenable").
+
+Attempt the read; structural privacy means a genuinely ungranted private doc still returns `PATH_NOT_FOUND` (treat as not-readable — Step 4). Do not open more docs than needed to answer. If a private doc 404s *despite* a present grant and an `item_drive_id`-qualified anchor, that's a cross-drive bug to surface — **do not** fall back to an external connector to fetch it (standards § "Reads go through aifs only").
 
 ### Step 4 — Answer
 Summarize the relevant doc(s), cite each by title and group path, and link/point to them. If a strong title match is a private doc the member **can't** read, say so: "There's a private doc titled `{title}` owned by {owner} that looks relevant — you can ask for access with `@ai:request-access`." Never guess its contents.

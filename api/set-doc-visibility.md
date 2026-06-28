@@ -1,7 +1,7 @@
 ---
 name: set-doc-visibility
 type: task
-version: 1.0.1
+version: 1.1.0
 collection: library
 description: Change a document's visibility and grants — make a public doc private, publish a private doc, or share/unshare a private doc with named members. Owns the title-leak warning (going private) and the strip/enrich rule (content-derived metadata exists in the catalog only while a doc is public). Private grants are member-applied via permission-change-helper, owner-Accept, hard-gated; no owner-bypass.
 stateful: true
@@ -58,10 +58,10 @@ Read setup responses and local `member-index.json` (`member_hash`, `member_folde
 4. Confirm: "`{title}` is now org-public and discoverable via '@ai:find-doc'."
 
 ### Step 3C — Share with people (private doc)
-1. `aifs_stat` the doc folder → `folder_id` (record in `meta.json`). **This step is mandatory:** the helper rejects a My-Drive *path* (e.g. `id:{member_folder_id}/library/{slug}`) and requires the folder's resolved Drive ID as a bare `id:{folder_id}`.
+1. `aifs_stat` the doc folder → record both `folder_id` (the `id`) **and `item_drive_id` (the returned `drive_id`)** in `meta.json`. **This step is mandatory:** the helper rejects a My-Drive *path* (e.g. `id:{member_folder_id}/library/{slug}`) and requires the folder's resolved Drive ID as a bare `id:{folder_id}`. Capturing `drive_id` (adapter 2.3.0+) is what makes the doc openable cross-drive by recipients (C.1.3 `crossdriveread`) — a private doc lives in the owner's personal OneDrive, so a recipient needs `id:{item_drive_id}:{folder_id}`.
 2. Collect people + level (read | collaborate); resolve against `members-registry.json`; drop unresolvables with notice.
 3. ONE `permission-change-helper` spec: `op: "share"` per grant on resource **`id:{folder_id}`** (the bare Drive ID from step 1, NOT a path), role `reader` (read) or `writer` (collaborate). **Owner Accepts.** **HARD GATE:** proceed only on outcome `"applied"` OR an independent `aifs_get_permissions` confirming each grant.
-4. After the gate passes, set the pointer `scope: "private_shared"` (the grant list itself lives in the Drive ACL — `aifs_get_permissions` is the source of truth for *who*; the pointer records only *that* it's shared). Write + verify.
+4. After the gate passes, set the pointer `scope: "private_shared"` and **write `item_drive_id` into the pointer** alongside `folder_id`/`item_id` (the grant list itself lives in the Drive ACL — `aifs_get_permissions` is the source of truth for *who*; the pointer records only *that* it's shared, plus the cross-drive coordinates to open it). Write + verify.
 5. Confirm who can read, who can write, and that the title was already org-visible.
 
 ### Step 3D — Unshare

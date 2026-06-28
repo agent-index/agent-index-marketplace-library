@@ -1,7 +1,7 @@
 ---
 name: create-doc
 type: task
-version: 1.0.0
+version: 1.1.0
 collection: library
 description: Create a document in the library — org-public by default (the /shared/library/ commons) or private (the owner's My Drive, content gated to owner + grants). Files the doc under a chosen group, validates its type against the governed vocabulary, and writes the always-public catalog pointer (enriched metadata for public docs only). Going private surfaces the title-leak warning.
 stateful: true
@@ -88,7 +88,7 @@ Build `meta.json` (and the matching pointer fields):
 ### Step 7 — Write the catalog pointer (same operation)
 Write `{library_index_path}/{owner_hash}-{doc-slug}.json`:
 - **Public** → full pointer **with** enriched fields (`type`, `tags`, `summary`) + `location` = the commons path.
-- **Private** → pointer **without** `type`/`tags`/`summary`; include `id`, `title`, `group_id`, `owner`, `owner_hash`, `scope: "private"`, lifecycle dates, and `folder_id` (stat the doc folder for its id) instead of a `/shared` path.
+- **Private** → pointer **without** `type`/`tags`/`summary`; include `id`, `title`, `group_id`, `owner`, `owner_hash`, `scope: "private"`, lifecycle dates, and `folder_id` **plus `item_drive_id`** — `aifs_stat` the doc folder once and record both its `id` (→ `folder_id`) and `drive_id` (→ `item_drive_id`, adapter 2.3.0+) — instead of a `/shared` path. `item_drive_id` lets a future grantee open the doc cross-drive (C.1.3 `crossdriveread`); it costs nothing now and avoids a re-stat at share time.
 JSON-parse-verify after writing. If the pointer write fails after the content write, surface loudly and retry — do not leave the doc un-indexed.
 
 ### Step 8 — Confirm

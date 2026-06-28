@@ -1,5 +1,10 @@
 # Changelog — Library
 
+## 1.1.0 — 2026-06-28 — Release C.1.3: crossdriveread
+
+### Fixed
+- **`crossdriveread` — shared private docs are now openable cross-drive.** A private/shared doc lives in the owner's personal OneDrive; on OneDrive a bare `id:{folder_id}` anchor resolves against the *reader's* own drive and returns `PATH_NOT_FOUND`, so a recipient could discover handoff-test-2 via its pointer but not open it (ms_prod_9). `create-doc` (1.1.0) and `set-doc-visibility` (1.1.0) now capture the doc folder's `drive_id` from `aifs_stat` and write it into the pointer (and meta) as `item_drive_id`; `find-doc` (1.1.0) opens shared private docs via the cross-drive anchor `id:{item_drive_id}:{folder_id}/doc.md` (bare-anchor fallback for older pointers), and never falls back to an external connector on a 404. Requires onedrive adapter 2.3.0+; harmless on gdrive (native shared-content reads).
+
 ## 1.0.1 — 2026-06-23
 
 Patch: execution details in `set-doc-visibility` confirmed against the live gdrive adapter during Phase L. No behavior/model change.
