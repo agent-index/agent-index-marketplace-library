@@ -1,5 +1,13 @@
 # Changelog — Library
 
+## 1.2.0 — 2026-07-06 — Release C.1.3.7: catalog/ACL reconcile
+
+Closes bug `20260706-8d20ea22-libptrstale`, surfaced by the Agent Index Dev 1 gdrive-arm validation (after a raw unshare + `transferOwnership`, the `gd-test` pointer still claimed the old owner and `private_shared`).
+
+### Fixed
+- **`find-doc` (1.1.0 → 1.2.0): reconcile the pointer against the actual ACL on read.** A pointer's `owner`/`scope` can drift when a doc's ownership/sharing changes outside the library (raw `transferOwnership`, out-of-band unshare, `owner_departed`). When opening a candidate, `find-doc` now does a best-effort `aifs_get_permissions` on the `folder_id` and, on mismatch, **trusts the ACL over the pointer** — surfaces the corrected owner/scope, notes the entry is stale, heals the pointer if writable, else flags it. Never presents a stale pointer's owner/scope as fact.
+- **`review-report` (1.0.0 → 1.1.0): pointer/ACL drift sweep.** Alongside overdue docs, it now flags a "stale catalog metadata" list — in-scope docs whose real owner/scope no longer matches the pointer — as the periodic reconciliation sweep `find-doc` defers to. Read-only.
+
 ## 1.1.0 — 2026-06-28 — Release C.1.3: crossdriveread
 
 ### Fixed
