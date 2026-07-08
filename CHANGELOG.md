@@ -1,5 +1,16 @@
 # Changelog — Library
 
+## 1.3.0 — 2026-07-08 — Release C.1.4.0: ownership transfer + pointer identity (libownerxfer)
+
+Closes bug `20260707-8d20ea22-libownerxfer`, surfaced by the Agent Index Dev 2 gdrive-arm validation (a member ownership transfer left a stale pointer AND an undeletable duplicate the member couldn't remove).
+
+### Added
+- **`transfer-doc-ownership` (1.0.0) — new capability.** Transfers a doc's Drive ownership AND rewrites the catalog pointer + `meta.json` in the same operation, hard-gated on an independent `aifs_get_permissions` check; the new owner Accepts. "Make X the owner of doc Y" routes here, never through the raw permission helper (which knows nothing about the catalog). gdrive-only positive path; returns cleanly on OneDrive/SharePoint (ownership is drive/site-level — `NOT_IMPLEMENTED`).
+
+### Fixed
+- **Catalog pointers are keyed on the doc's stable `id`, not `owner_hash` (`create-doc` 1.2.0).** An ownership/visibility change is now an in-place content rewrite at the same filename — never a rename that strands an **undeletable duplicate** on the Shared-Drive index (Shared-Drive contributors can't trash files). Pointers are located by matching `id`/`folder_id`, never by reconstructing an owner-derived name; legacy `{owner_hash}-{slug}.json` files are still read by content.
+- **`find-doc` (1.3.0) collapses duplicate pointers by `id`; `review-report` (1.2.0) sweeps for duplicate + legacy-named pointers** so an admin (the only role that can delete index files) can clean them up.
+
 ## 1.2.0 — 2026-07-06 — Release C.1.3.7: catalog/ACL reconcile
 
 Closes bug `20260706-8d20ea22-libptrstale`, surfaced by the Agent Index Dev 1 gdrive-arm validation (after a raw unshare + `transferOwnership`, the `gd-test` pointer still claimed the old owner and `private_shared`).

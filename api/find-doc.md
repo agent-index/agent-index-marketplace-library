@@ -1,7 +1,7 @@
 ---
 name: find-doc
 type: skill
-version: 1.2.0
+version: 1.3.0
 collection: library
 description: The primary read path. Query the catalog (title, tags, summary, type) for docs on a topic, then open only the matching docs the member is allowed to read and summarize them. Private docs the member can't read surface title-only with a request-access affordance.
 stateful: false
@@ -31,6 +31,8 @@ This metadata-first approach is what lets the library scale past a few hundred d
 
 ### Step 1 — Load
 Read setup responses; verify auth. Read `tree.json` and the per-doc pointers.
+
+**Collapse duplicate pointers by doc `id` (`libownerxfer`).** Index pointers by their `id` field, not by filename. If two or more pointers share the same `id` — a legacy artifact of the old `{owner_hash}-{slug}` naming, where an ownership change created a second file the member couldn't delete — treat them as ONE doc: keep the entry whose `owner`/`scope` matches the actual ACL (Step 3 reconcile) and suppress the stale twin, noting "`{title}` has a duplicate catalog pointer — an admin should remove the stale one (`@ai:review-report` lists it)." Never present the same doc twice.
 
 ### Step 2 — Match
 Score pointers against the member's query over `title`, `tags`, `summary`, and `type` (public docs) and `title` (private docs). Rank; keep the top few candidates.

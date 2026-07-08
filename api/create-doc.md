@@ -1,7 +1,7 @@
 ---
 name: create-doc
 type: task
-version: 1.1.0
+version: 1.2.0
 collection: library
 description: Create a document in the library — org-public by default (the /shared/library/ commons) or private (the owner's My Drive, content gated to owner + grants). Files the doc under a chosen group, validates its type against the governed vocabulary, and writes the always-public catalog pointer (enriched metadata for public docs only). Going private surfaces the title-leak warning.
 stateful: true
@@ -86,7 +86,7 @@ Build `meta.json` (and the matching pointer fields):
 - **Private** → write the same folder under `id:{member_folder_id}/library/{doc-slug}/`. The private home is private by default (no grants needed at creation).
 
 ### Step 7 — Write the catalog pointer (same operation)
-Write `{library_index_path}/{owner_hash}-{doc-slug}.json`:
+Write the pointer at `{library_index_path}/{id}-{doc-slug}.json` — **keyed on the doc's stable intrinsic `id`, never on `owner_hash`** (bug `libownerxfer`). The `id` never changes when ownership, visibility, or location changes, so every later pointer update is an **in-place content rewrite at the same filename** — never a create-new-plus-delete-old rename. This matters because Shared-Drive *contributors* (members) cannot trash index files, so an owner-keyed filename forces a rename that strands an **undeletable duplicate pointer** on any ownership transfer. Keep `owner`/`owner_hash` as *fields* inside the pointer, not in the filename.
 - **Public** → full pointer **with** enriched fields (`type`, `tags`, `summary`) + `location` = the commons path.
 - **Private** → pointer **without** `type`/`tags`/`summary`; include `id`, `title`, `group_id`, `owner`, `owner_hash`, `scope: "private"`, lifecycle dates, and `folder_id` **plus `item_drive_id`** — `aifs_stat` the doc folder once and record both its `id` (→ `folder_id`) and `drive_id` (→ `item_drive_id`, adapter 2.3.0+) — instead of a `/shared` path. `item_drive_id` lets a future grantee open the doc cross-drive (C.1.3 `crossdriveread`); it costs nothing now and avoids a re-stat at share time.
 JSON-parse-verify after writing. If the pointer write fails after the content write, surface loudly and retry — do not leave the doc un-indexed.
@@ -99,6 +99,7 @@ Public: "Created `{title}` ({type}) under `{group path}` — it's org-public; an
 ## Directives
 
 - The catalog pointer and the content are one logical write — never index without content or write content without indexing.
+- **Pointers are keyed on the doc's stable `id` (`{id}-{doc-slug}.json`), and are always LOCATED by scanning the index and matching `id`/`folder_id` — never by reconstructing an owner-derived filename.** Any capability that updates a pointer (visibility, ownership, rename, move, archive) rewrites the existing file **in place**; it must never create a second pointer for the same doc `id`. Legacy pointers named `{owner_hash}-{doc-slug}.json` are read normally by content; `find-doc`/`review-report` reconcile collapses any duplicate `id` (bug `libownerxfer`).
 - Enriched metadata (`type`, `tags`, `summary`) is written to the pointer **iff** the doc is org-public. Never put it in a private doc's pointer.
 - Always render the title-leak warning before creating a private doc; offer the codename rename.
 - A doc folder always contains `doc.md` and `meta.json`; images go in `assets/`.

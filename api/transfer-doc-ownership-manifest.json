@@ -1,7 +1,7 @@
 {
-  "name": "edit-doc",
+  "name": "transfer-doc-ownership",
   "type": "task",
-  "display_name": "Edit Document",
+  "display_name": "Transfer Document Ownership",
   "collection": "library",
   "collection_version": "1.3.0",
   "version": "1.0.0",
@@ -10,21 +10,22 @@
   "stateful": true,
   "produces_artifacts": false,
   "produces_shared_artifacts": true,
-  "setup_template": "edit-doc-setup.md",
+  "setup_template": "transfer-doc-ownership-setup.md",
   "dependency_status": "complete",
   "missing_dependencies": [],
   "parameter_provenance": {
     "library_path": "org-mandated",
-    "library_index_path": "org-mandated",
-    "doc_type_policy": "org-mandated",
-    "doc_types": "org-mandated"
+    "library_index_path": "org-mandated"
   },
   "dependencies": {
-    "skills": [],
+    "skills": [
+      "permission-change-helper"
+    ],
     "tasks": []
   },
   "external_dependencies": [
-    "Remote filesystem access"
+    "Remote filesystem access",
+    "permission-change-helper"
   ],
   "optional_external_dependencies": [],
   "reads_from": "/shared/library/, id:{member_folder_id}/library/, /shared/library-index/",
