@@ -1,7 +1,7 @@
 ---
 name: create-doc
 type: task
-version: 1.2.0
+version: 1.2.1
 collection: library
 description: Create a document in the library — org-public by default (the /shared/library/ commons) or private (the owner's My Drive, content gated to owner + grants). Files the doc under a chosen group, validates its type against the governed vocabulary, and writes the always-public catalog pointer (enriched metadata for public docs only). Going private surfaces the title-leak warning.
 stateful: true
@@ -48,7 +48,7 @@ Read from `collection-setup-responses.md`:
 ## Workflow
 
 ### Step 1 — Load configuration and identity
-Read setup responses for the parameters above. Read local `member-index.json` for `member_hash` and **`member_folder_id`** (missing → "Your private member space isn't set up — run `@ai:update` and retry." Halt). Verify auth.
+Read setup responses for the parameters above. Read local `member-index.json` for `member_hash` and **`member_folder_id`**. If `member_folder_id` is missing/null, the member's **private My Drive space** (`Agent-Index-Private`) hasn't been provisioned — a private doc lives in the member's OWN My Drive (`id:{member_folder_id}/library/...`), so halt with: **"Your private member space isn't set up yet — run `@ai:member-bootstrap` to provision it (it creates the `Agent-Index-Private` folder in your own My Drive), then retry."** Do NOT tell the member to run `@ai:update` (updates can't create a My Drive folder) and do NOT create it in the shared drive or a hashed folder — the private space is the member's My Drive only (`memberprivspacenotprovisioned`). Verify auth.
 
 ### Step 2 — Placement
 Ask which group the doc belongs under (read `tree.json`; resolve by name/path; offer `create-group` if the target doesn't exist yet). Record the `group_id`.

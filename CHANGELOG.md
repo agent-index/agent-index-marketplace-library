@@ -1,5 +1,10 @@
 # Changelog — Library
 
+## 1.4.0 — 2026-07-10 — Release C.1.4.2: private-space halt remedy (memberprivspacenotprovisioned)
+
+### Fixed
+- **`create-doc` (1.2.1) — correct halt when the member's private space isn't provisioned.** A private doc lives in the member's OWN My Drive (`id:{member_folder_id}/library/…`). If `member_folder_id` is missing, create-doc now halts with "run `@ai:member-bootstrap` to provision your `Agent-Index-Private` My Drive folder, then retry" — never `@ai:update` (which can't create a My Drive folder), and never a shared-drive/hashed folder. Pairs with core 3.24.0's member-bootstrap provisioning fix.
+
 ## 1.3.0 — 2026-07-08 — Release C.1.4.0: ownership transfer + pointer identity (libownerxfer)
 
 Closes bug `20260707-8d20ea22-libownerxfer`, surfaced by the Agent Index Dev 2 gdrive-arm validation (a member ownership transfer left a stale pointer AND an undeletable duplicate the member couldn't remove).
