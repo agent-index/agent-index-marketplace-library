@@ -1,7 +1,7 @@
 ---
 name: transfer-doc-ownership
 type: task
-version: 1.0.0
+version: 1.1.0
 collection: library
 description: Transfer ownership of a library document to another member, performing the Drive ownership change AND the catalog bookkeeping atomically. Routes "make X the owner of doc Y" here — never through the raw permission helper (which knows nothing about the catalog and leaves the pointer stale). The pointer is rewritten in place (it is keyed on the doc's stable id, so ownership transfer is never a rename), so it never creates an undeletable duplicate. gdrive only — ownership transfer is NOT_IMPLEMENTED on OneDrive/SharePoint (ownership is drive/site-level).
 stateful: true
@@ -47,7 +47,7 @@ Ownership transfer is a **gdrive-only positive path**. If the org's backend is O
 
 ### Step 3 — Transfer Drive ownership (hard-gated)
 1. `aifs_stat` the doc folder → confirm its `id` (`folder_id`) and current `drive_id` (`item_drive_id`).
-2. ONE `permission-change-helper` spec: `op: "transfer"` (transferOwnership) on resource **`id:{folder_id}`** (the bare Drive ID, NOT a path) to the new owner. The **new owner Accepts** the ownership transfer (Google requires the recipient's consent). Apply to the doc folder and its contents (`doc.md`, `meta.json`, `assets/*`) as the adapter's transfer covers.
+2. ONE `permission-change-helper` spec: `op: "transfer_ownership"` (transferOwnership) on resource **`id:{folder_id}`** (the bare Drive ID, NOT a path) to the new owner. The **new owner Accepts** the ownership transfer (Google requires the recipient's consent). Apply to the doc folder and its contents (`doc.md`, `meta.json`, `assets/*`) as the adapter's transfer covers.
 3. **HARD GATE:** proceed only on outcome `"applied"` OR an independent `aifs_get_permissions` on `id:{folder_id}` confirming the new owner is now `owner` (and the prior owner is demoted). Never write the catalog before this passes.
 
 ### Step 4 — Catalog bookkeeping (in place, atomic with the transfer)

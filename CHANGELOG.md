@@ -1,5 +1,11 @@
 # Changelog — Library
 
+## 1.5.0 — 2026-07-12 — Release C.1.4.3: ownership op name + owner-aware reconcile
+
+### Fixed
+- **`transfer-doc-ownership` (1.1.0) — correct helper op name (`transferdocopname`).** The permission-change spec now names the op `transfer_ownership` (what the helper binary expects), not `transfer`.
+- **`find-doc` (1.4.0) — owner-aware ACL reconcile (`getpermsownerwriter`).** On Google Drive, `aifs_get_permissions` reports a My-Drive item's owner as `writer` (no literal `owner` role); the reconcile no longer flags a pointer stale or heals its `owner` field merely because no `owner` role appears — for a My-Drive doc it trusts the pointer's `owner` and verifies via the helper's Drive-API check when a definitive owner is needed. Genuine scope/visibility drift still reconciles as before.
+
 ## 1.4.0 — 2026-07-10 — Release C.1.4.2: private-space halt remedy (memberprivspacenotprovisioned)
 
 ### Fixed

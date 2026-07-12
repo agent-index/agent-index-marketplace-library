@@ -1,7 +1,7 @@
 ---
 name: find-doc
 type: skill
-version: 1.3.0
+version: 1.4.0
 collection: library
 description: The primary read path. Query the catalog (title, tags, summary, type) for docs on a topic, then open only the matching docs the member is allowed to read and summarize them. Private docs the member can't read surface title-only with a request-access affordance.
 stateful: false
@@ -44,7 +44,9 @@ For each top candidate, resolve the read target from its pointer:
 
 Attempt the read; structural privacy means a genuinely ungranted private doc still returns `PATH_NOT_FOUND` (treat as not-readable — Step 4). Do not open more docs than needed to answer. If a private doc 404s *despite* a present grant and an `item_drive_id`-qualified anchor, that's a cross-drive bug to surface — **do not** fall back to an external connector to fetch it (standards § "Reads go through aifs only").
 
-**Reconcile the pointer against the actual ACL (`libptrstale`).** A pointer's `owner`/`scope` can drift from reality when a doc's ownership or sharing changed **outside the library** — a raw `transferOwnership`, an out-of-band unshare, or an `owner_departed` offboarding. For each candidate you open (or attempt), do a best-effort `aifs_get_permissions` on its `folder_id` and compare to the pointer: if the real owner ≠ the pointer's `owner`, or the grant set no longer matches the pointer's `scope` (e.g. `private_shared` but only the owner still has access, or `private` but others do), **trust the ACL, not the pointer** — surface the corrected owner/scope and note that "the catalog entry for `{title}` is stale (owner/scope changed outside the library)." If you can write the pointer, heal it (rewrite `owner`/`scope`/`item_drive_id` to match the ACL); otherwise flag it for reconciliation (`review-report`'s stale sweep also catches it). Never present a stale pointer's `owner`/`scope` as fact once the ACL disagrees.
+**Reconcile the pointer against the actual ACL (`libptrstale`).** A pointer's `owner`/`scope` can drift from reality when a doc's ownership or sharing changed **outside the library** — a raw `transferOwnership`, an out-of-band unshare, or an `owner_departed` offboarding. For each candidate you open (or attempt), do a best-effort `aifs_get_permissions` on its `folder_id` and compare to the pointer: if the grant set no longer matches the pointer's `scope` (e.g. `private_shared` but only the owner still has access, or `private` but others do), **trust the ACL, not the pointer** — surface the corrected scope and note that "the catalog entry for `{title}` is stale (owner/scope changed outside the library)." If you can write the pointer, heal it (rewrite `owner`/`scope`/`item_drive_id` to match the ACL); otherwise flag it for reconciliation (`review-report`'s stale sweep also catches it). Never present a stale pointer's `scope` as fact once the ACL disagrees.
+
+> **Owner-awareness (`getpermsownerwriter`).** Do **not** flag a pointer stale or heal its `owner` field merely because no literal `owner` role appears in `aifs_get_permissions`. On Google Drive, `aifs_get_permissions` reports the owner of a **My-Drive** item with role `writer` — it does not emit a literal `owner` role — so an absent `owner` role is **expected**, not evidence of ownership drift. For a My-Drive-hosted doc, treat the missing `owner` role as a known gdrive limitation and **trust the pointer's `owner`**; only when a definitive owner is genuinely needed, verify ownership via the permission-helper's Drive-API check rather than inferring it from the ACL role list. Continue to reconcile genuine `scope`/visibility drift as above.
 
 ### Step 4 — Answer
 Summarize the relevant doc(s), cite each by title and group path, and link/point to them. If a strong title match is a private doc the member **can't** read, say so: "There's a private doc titled `{title}` owned by {owner} that looks relevant — you can ask for access with `@ai:request-access`." Never guess its contents.
