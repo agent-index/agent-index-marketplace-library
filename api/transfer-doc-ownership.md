@@ -47,7 +47,7 @@ Ownership transfer is a **gdrive-only positive path**. If the org's backend is O
 
 ### Step 3 — Transfer Drive ownership (hard-gated)
 1. `aifs_stat` the doc folder → confirm its `id` (`folder_id`) and current `drive_id` (`item_drive_id`).
-2. ONE `permission-change-helper` spec: `op: "transfer_ownership"` (transferOwnership) on resource **`id:{folder_id}`** (the bare Drive ID, NOT a path) to the new owner. The **new owner Accepts** the ownership transfer (Google requires the recipient's consent). Apply to the doc folder and its contents (`doc.md`, `meta.json`, `assets/*`) as the adapter's transfer covers.
+2. ONE `permission-change-helper` spec: `op: "transfer_ownership"` (transferOwnership) on resource **`id:{folder_id}`** (the bare Drive ID, NOT a path) to the new owner. **Build this spec with the committed `build-permission-spec` CLI** (see `permission-change-helper` Step 2.5): emit the ops-array as data and run the CLI -- it enforces the op name, email/UPN recipient form, required role, and the canonical `<project_dir>/outputs/` path, and prints the `spec_path`/`link_path` to use. Do not hand-author the spec JSON. The **new owner Accepts** the ownership transfer (Google requires the recipient's consent). Apply to the doc folder and its contents (`doc.md`, `meta.json`, `assets/*`) as the adapter's transfer covers.
 3. **HARD GATE:** proceed only on outcome `"applied"` OR an independent `aifs_get_permissions` on `id:{folder_id}` confirming the new owner is now `owner` (and the prior owner is demoted). Never write the catalog before this passes.
 
 ### Step 4 — Catalog bookkeeping (in place, atomic with the transfer)
