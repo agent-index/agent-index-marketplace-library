@@ -1,5 +1,10 @@
 ﻿# Changelog â€” Library
 
+## 1.6.1 — 2026-07-23 — Release C.1.5.2: torn-write tail reconstruction (tornwritefiledamage)
+
+### Fixed
+- **`set-doc-visibility.md` — completed the file-level relocation procedure (`tornwritefiledamage`).** The `(1) create the destination folder…` bullet was born truncated at b817e21 (no git donor ever held the rest); reconstructed `(2)` copy each file, `(3)` verify, `(4)` delete source only after the destination is confirmed — consistent with the adjacent "verify destination present, source removed" constraint. Reviewed + approved.
+
 ## 1.6.0 â€” 2026-07-18 â€” Release C.1.5.0: permission specs via the committed builder
 
 ### Changed
@@ -61,4 +66,5 @@ Initial release. New collection: a hierarchical documentation library replacing 
 - **Capabilities (13):** create-group, create-doc, edit-doc, move-item, rename-item, set-doc-visibility, browse-library, find-doc, request-access, archive-doc, review-report, manage-doc-types, library-tutorial.
 
 Requires agent-index-core 3.9.0+, adapter 2.5.0+, permission-change-helper 0.4.1+.
+
 
