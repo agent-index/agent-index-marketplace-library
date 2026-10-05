@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "description": "Declares the ADDITIVE collaborative grants the library collection needs. Read by install-collection Step 5.5 and provisioned via the permission-change-helper skill (admin reviews + Accepts). Never applied by aifs_share directly. {param} placeholders resolve at provisioning from collection-setup-responses.md and org-config.json. This file declares GRANTS only (op:share). Per-document privacy is NOT expressed here \u2014 private docs live in their owner's My Drive and are shared by member-applied grants at runtime (set-doc-visibility).",
+  "description": "Declares the ADDITIVE collaborative grants the library collection needs. Read by install-collection Step 5.5 and provisioned through the core permission-changes procedure (the admin confirms the exact changes). Never applied by calling aifs_share directly. {param} placeholders resolve at provisioning from collection-setup-responses.md and org-config.json. This file declares GRANTS only (op:share). Per-document privacy is NOT expressed here \u2014 private docs live in their owner's My Drive and are shared by member-applied grants at runtime (set-doc-visibility).",
   "acls": [
     {
       "path": "{library_path}/",

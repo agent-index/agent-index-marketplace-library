@@ -3,7 +3,7 @@ name: library-tutorial
 type: skill
 version: 1.0.0
 collection: library
-description: Explain how the library works: the always-org-public taxonomy, public-by-default documents, how to go private and share, the rule that private-doc TITLES stay org-public, the governed doc-type vocabulary, staleness/review tracking, and how to find and request access to docs.
+description: "Explain how the library works: the always-org-public taxonomy, public-by-default documents, how to go private and share, the rule that private-doc TITLES stay org-public, the governed doc-type vocabulary, staleness/review tracking, and how to find and request access to docs."
 stateful: false
 dependencies:
   skills: []

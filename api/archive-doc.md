@@ -3,7 +3,7 @@ name: archive-doc
 type: task
 version: 1.0.0
 collection: library
-description: Soft-retire a document: mark its catalog pointer archived; the content is left intact in the commons (nothing hard-deleted under /shared). A private owner may hard-delete their own doc — it vanishes cleanly if it was never shared, or leaves a revoked record if it ever had a pointer.
+description: "Soft-retire a document: mark its catalog pointer archived; the content is left intact in the commons (nothing hard-deleted under /shared). A private owner may hard-delete their own doc — it vanishes cleanly if it was never shared, or leaves a revoked record if it ever had a pointer."
 stateful: true
 produces_artifacts: false
 produces_shared_artifacts: true

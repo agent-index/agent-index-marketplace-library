@@ -1,26 +1,24 @@
 ---
 name: transfer-doc-ownership
 type: task
-version: 1.1.0
+version: 1.2.0
 collection: library
-description: Transfer ownership of a library document to another member, performing the Drive ownership change AND the catalog bookkeeping atomically. Routes "make X the owner of doc Y" here — never through the raw permission helper (which knows nothing about the catalog and leaves the pointer stale). The pointer is rewritten in place (it is keyed on the doc's stable id, so ownership transfer is never a rename), so it never creates an undeletable duplicate. gdrive only — ownership transfer is NOT_IMPLEMENTED on OneDrive/SharePoint (ownership is drive/site-level).
+description: Transfer ownership of a library document to another member, performing the Drive ownership change AND the catalog bookkeeping atomically. Routes "make X the owner of doc Y" here — never as a bare ownership change (which knows nothing about the catalog and leaves the pointer stale). The pointer is rewritten in place (it is keyed on the doc's stable id, so ownership transfer is never a rename), so it never creates an undeletable duplicate. gdrive only — ownership transfer is NOT_IMPLEMENTED on OneDrive/SharePoint (ownership is drive/site-level).
 stateful: true
 produces_artifacts: false
 produces_shared_artifacts: true
 dependencies:
-  skills:
-    - permission-change-helper
+  skills: []
   tasks: []
 external_dependencies:
   - Remote filesystem access (adapter 2.5.0+)
-  - permission-change-helper binary 0.4.1+ (bare id:{folderId} resources)
 reads_from: "/shared/library/, id:{member_folder_id}/library/, /shared/library-index/"
 writes_to: "/shared/library/, id:{member_folder_id}/library/, /shared/library-index/"
 ---
 
 ## About This Task
 
-Transfer Document Ownership moves a library doc's ownership from the current owner to another member and keeps the catalog consistent in the **same operation**. It exists to close bug `libownerxfer`: before it, "make Bill the owner" went through the raw `permission-change-helper` (a Drive-only ownership change that knows nothing about the catalog), which left the pointer + `meta.json` recording the old owner (`libptrstale` drift) and — when anyone tried to fix the owner-hash-keyed pointer filename by renaming it — created a **duplicate pointer the member couldn't delete** (Shared-Drive contributors can't trash index files).
+Transfer Document Ownership moves a library doc's ownership from the current owner to another member and keeps the catalog consistent in the **same operation**. It exists to close bug `libownerxfer`: before it, "make Bill the owner" went through the raw permission helper (a Drive-only ownership change that knows nothing about the catalog), which left the pointer + `meta.json` recording the old owner (`libptrstale` drift) and — when anyone tried to fix the owner-hash-keyed pointer filename by renaming it — created a **duplicate pointer the member couldn't delete** (Shared-Drive contributors can't trash index files).
 
 Two things make this safe now:
 
@@ -33,22 +31,31 @@ The doc, and the new owner (a member, resolved against `members-registry.json`).
 ---
 
 ## Configuration
-`library_path`, `library_index_path` (from setup responses). Requires `permission-change-helper` 0.4.1+.
+`library_path`, `library_index_path` (from setup responses). Requires agent-index-core 3.32.0+ (permission-changes procedure).
 
 ---
 
 ## Workflow
 
 ### Step 1 — Load, identify, authorize
-Read setup responses and local `member-index.json` (`member_hash`, `member_folder_id` — missing → `@ai:update` halt). Verify auth. Resolve the doc via its pointer (locate it by matching the doc's `id`/`folder_id`, **not** by reconstructing a filename). **Owner-only:** only the current owner may transfer ownership — if the caller isn't the pointer's `owner`, halt: "Only the current owner ({owner}) can transfer this doc." Resolve the new owner against `members-registry.json`; if unresolvable, halt with a clear message.
+Read setup responses and local `member-index.json` (`member_hash`, `member_folder_id` — missing → `@ai:update` halt). Verify auth. Resolve the doc via its pointer (locate it by matching the doc's `id`/`folder_id`, **not** by reconstructing a filename). **Owner-only:** only the current owner may transfer ownership — if the caller isn't the pointer's `owner`, halt: "Only the current owner ({owner}) can transfer this doc." On gdrive adapter 2.11.1+ the caller's ownership can also be confirmed via `aifs_get_permissions` on the doc folder (role `owner`); on older adapters the owner shows as `writer`, so trust the pointer. Resolve the new owner against `members-registry.json`. **The new owner must be a registry member** — unlike sharing, an outside email isn't accepted, because the catalog pointer and `meta.json` must record the new owner's `owner_hash`, which only registry members have. If the name doesn't resolve, ask for the member's email; if it still isn't in the registry, halt: "{name} isn't a member of the org, so they can't own a library doc. Share it with them instead (`@ai:set-doc-visibility`)."
 
-### Step 2 — Backend capability gate
-Ownership transfer is a **gdrive-only positive path**. If the org's backend is OneDrive/SharePoint, halt cleanly: "Ownership transfer isn't supported on this backend — OneDrive/SharePoint ownership is drive/site-level, not per-item. Consider sharing the doc as a collaborator instead (`@ai:set-doc-visibility`)." This mirrors the adapter's `NOT_IMPLEMENTED` for `transferOwnership` and is the *correct* pass on onedrive, not a failure.
+### Step 2 — Scope and backend gates
+**Scope pre-check (first).** If the pointer's `scope` is `org_public`, the doc lives in the Shared Drive commons, where the shared drive owns every item and per-item ownership transfer is unsupported. Halt before any permission change: "Public docs are owned by the shared drive, so their ownership can't move. To change the owner, make `{title}` private first (`@ai:set-doc-visibility`) and then transfer it, or ask an admin." Don't build a transfer row for it.
+
+**Backend gate.** Ownership transfer is a **gdrive-only positive path**. If the org's backend is OneDrive/SharePoint, halt cleanly: "Ownership transfer isn't supported on this backend — OneDrive/SharePoint ownership is drive/site-level, not per-item. Consider sharing the doc as a collaborator instead (`@ai:set-doc-visibility`)." This mirrors the adapter's `NOT_IMPLEMENTED` for `transferOwnership` and is the *correct* pass on onedrive, not a failure.
 
 ### Step 3 — Transfer Drive ownership (hard-gated)
 1. `aifs_stat` the doc folder → confirm its `id` (`folder_id`) and current `drive_id` (`item_drive_id`).
-2. ONE `permission-change-helper` spec: `op: "transfer_ownership"` (transferOwnership) on resource **`id:{folder_id}`** (the bare Drive ID, NOT a path) to the new owner. **Build this spec with the committed `build-permission-spec` CLI** (see `permission-change-helper` Step 2.5): emit the ops-array as data and run the CLI -- it enforces the op name, email/UPN recipient form, required role, and the canonical `<project_dir>/outputs/` path, and prints the `spec_path`/`link_path` to use. Do not hand-author the spec JSON. The **new owner Accepts** the ownership transfer (Google requires the recipient's consent). Apply to the doc folder and its contents (`doc.md`, `meta.json`, `assets/*`) as the adapter's transfer covers.
-3. **HARD GATE:** proceed only on outcome `"applied"` OR an independent `aifs_get_permissions` on `id:{folder_id}` confirming the new owner is now `owner` (and the prior owner is demoted). Never write the catalog before this passes.
+2. **Request the transfer.** Follow `/agent-index-core/internal/permission-changes.md`:
+   - `calling_task: "transfer-doc-ownership"`, `confirmer: "owner"`
+   - one change: `op: "transfer_ownership"` on resource **`id:{folder_id}`** (the bare Drive ID, NOT a path) to the new owner's `sharing_identity`, `resource_label` "Doc '{title}'", `source: "member_request"`
+
+   The **current owner confirms** in chat (an ownership transfer is always confirmed individually). Google then emails the **new owner, who must accept** in Google Drive; that consent happens outside agent-index. The transfer covers the doc folder and its contents (`doc.md`, `meta.json`, `assets/*`) as the adapter's transfer covers.
+3. **Gate on the row state.** Never write the catalog before it passes.
+   - **`applied`** (the backend shows the new owner) or **`skipped_noop`** (the new owner already owns it, e.g. a re-run after they accepted) → Step 4.
+   - **`awaiting_recipient`** → the new owner hasn't accepted yet. Do NOT touch the catalog (it still correctly records the current owner). Tell the owner: "I've asked Google Drive to transfer `{title}` to {new_owner}. They'll get an email to accept. Once they do, run this again and I'll update the library catalog." Stop.
+   - Anything else → report it with the procedure's summary line; write nothing.
 
 ### Step 4 — Catalog bookkeeping (in place, atomic with the transfer)
 Only after the gate passes:
@@ -64,19 +71,21 @@ Only after the gate passes:
 
 ## Directives
 
-- **Owner-only**, new owner must **Accept**, and the catalog is **hard-gated** on an independent ACL confirmation before any pointer/meta write.
+- **Owner-only**: the current owner confirms the transfer in chat, and the new owner must accept it in Google Drive. The catalog is **gated** on the verified transfer (`applied` / `skipped_noop`) before any pointer/meta write.
 - **Never rename the pointer** — it is keyed on the stable doc `id`; ownership is a content-field change. Never create a second pointer for the same `id`.
-- Route "make X the owner of doc Y" here; never send an ownership change through the raw `permission-change-helper` directly (that's what strands the catalog — `libownerxfer`/`libptrstale`).
+- Route "make X the owner of doc Y" here; never make the ownership change outside this task (that's what strands the catalog — `libownerxfer`/`libptrstale`). Never call `aifs_transfer_ownership` outside the core permission-changes procedure.
 - Use `aifs_*` for all remote ops; JSON-parse-verify every catalog write.
-- gdrive-only; onedrive returns cleanly at Step 2.
+- gdrive-only; onedrive returns cleanly at Step 2. `org_public` docs (Shared-Drive-owned) also stop at Step 2 — never attempt a transfer on them.
+- The new owner must be a `members-registry.json` member (the catalog needs their `owner_hash`).
 
 ---
 
 ## Error Handling
 
 - Auth/connectivity → halt + `@ai:member-bootstrap`; write nothing.
-- New owner declines / doesn't Accept → the transfer never completes; do NOT touch the catalog (it still correctly records the old owner). Surface that the transfer is pending the recipient's acceptance.
+- New owner hasn't accepted (`awaiting_recipient`) or declines in Drive → the transfer never completes; do NOT touch the catalog (it still correctly records the old owner). Surface that the transfer is pending the recipient's acceptance; a re-run after they accept completes the catalog update (the procedure sees the transfer already in effect).
 - Transfer applied but a catalog write fails → the ACL is authoritative; surface loudly that ownership moved but the catalog write must be retried, and retry the in-place pointer/meta write. `find-doc`'s read-reconcile will report the corrected owner from the ACL in the meantime, so the doc is never misattributed.
-- Caller isn't the owner, or new owner unresolvable → halt in Step 1.
+- Caller isn't the owner, or new owner isn't a registry member → halt in Step 1.
+- Doc is `org_public` → halt in Step 2 with the "owned by the shared drive" message; write nothing.
 
 <!-- AIFS:FILE-END -->

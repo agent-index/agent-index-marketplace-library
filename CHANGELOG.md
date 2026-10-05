@@ -1,5 +1,27 @@
 ﻿# Changelog â€” Library
 
+## [1.7.0] — 2026-10-02 — Sharing and ownership transfer through the core permission-changes procedure
+
+**MINOR — requires agent-index-core 3.32.0.** Part of retiring the permission-change-helper (design record: `/shared/projects/core-improvements/artifacts/retire-permission-helper-*.md`).
+
+### Changed
+- **`set-doc-visibility` 1.2.0** — private-doc grants and removals go through core `internal/permission-changes.md`. The owner sees the exact table and confirms it (removals one at a time), and each change is verified. After an unshare, the pointer's `scope` is derived from a fresh `aifs_get_permissions` read, so a declined or failed removal is reflected accurately.
+- **Recipients outside the org are allowed** (by email; flagged **outside your org** in the table). Previously such people were dropped.
+- **`transfer-doc-ownership` 1.2.0** — the current owner confirms the transfer in chat. The new owner accepts Google Drive's transfer email; until they do, the row is `awaiting_recipient` and the catalog is untouched. Re-running after they accept completes the catalog update (the procedure sees the transfer already in effect).
+- **`find-doc` 1.4.1** — the owner check no longer cites the helper's Drive-API check. On gdrive adapter 2.11.1+, `aifs_get_permissions` reports a My-Drive owner as role `owner`.
+- **README** lists `transfer-doc-ownership` (capability count 14).
+
+### Fixed
+- **`set-doc-visibility`** — an unshare sets `scope: "revoked"` (and says "Access revoked") only when a fresh `aifs_get_permissions` read shows no explicit grants other than the owner; otherwise it lists who still has access. Share confirmations name only satisfied rows. Removing leftover grants after going public goes through the procedure (`source: "current_state"`, each removal confirmed).
+- **`set-doc-visibility`** — going private no longer deletes the commons source (non-admin members can't delete on the Shared Drive): each source file is overwritten as a moved stub and verified (soft-delete convention). Going public still removes the owner's My Drive source.
+- **`transfer-doc-ownership`** — refuses `org_public` docs up front (Shared-Drive items are owned by the drive; per-item transfer is unsupported) and states that the new owner must be a registry member (the catalog needs their `owner_hash`).
+- **`find-doc`** — pointer/ACL drift is flagged, never rewritten, consistent with `writes_to: null`.
+- **Collection setup 1.0.1** — wording: the collaborative grants are applied by `install-collection` Step 5.5 through the core permission-changes procedure. README: private docs are readable by the owner and "people they explicitly grant".
+- Manifest `external_dependencies` synced to frontmatter (`set-doc-visibility`, `transfer-doc-ownership`, `request-access`); quoted frontmatter `description` values that were invalid YAML (`archive-doc`, `library-tutorial`, `manage-doc-types`; also the `request-access` dependency entry); added `upgrade/`.
+
+### Removed
+- Dependency on the `permission-change-helper` skill and binary (frontmatter, manifests, `collection.json` external dependency, setup prerequisite).
+
 ## 1.6.1 — 2026-07-23 — Release C.1.5.2: torn-write tail reconstruction (tornwritefiledamage)
 
 ### Fixed

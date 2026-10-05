@@ -12,7 +12,7 @@ dependencies:
   tasks: []
 external_dependencies:
   - Remote filesystem access
-  - Slack / Microsoft Teams / Discord / email (conditional): deliver the access-request notification via the org's configured channel
+  - "Slack / Microsoft Teams / Discord / email (conditional): deliver the access-request notification via the org's configured channel"
 reads_from: "/shared/library-index/"
 writes_to: null
 ---
