@@ -1,7 +1,7 @@
 ---
 name: move-item
 type: task
-version: 1.0.0
+version: 1.0.1
 collection: library
 description: Move a document to a different group, or reparent a group within the taxonomy, to any depth. Reparenting is catalog-logical (the immutable id never changes, so links survive); for public docs the commons folder is relocated to keep the projection honest. Runs a cycle check so a group can't become its own descendant.
 stateful: true
@@ -41,7 +41,7 @@ Read setup responses and `member-index.json`. Verify auth. Identify whether the 
 
 ### Step 3 — Apply
 - **Doc, private:** set the pointer's `group_id` to the destination; no content relocation.
-- **Doc, public:** set the pointer's `group_id`, then relocate the commons folder from `{library_path}/{old-path}/{slug}/` to `{library_path}/{new-path}/{slug}/` via `aifs_copy` + delete-source (or move), and update the pointer's `location` path. Verify the new location before removing the old.
+- **Doc, public:** set the pointer's `group_id` (and, after the relocation, the new commons `location` path **and `folder_id`**), then relocate the commons folder from `{library_path}/{old-path}/{slug}/` to `{library_path}/{new-path}/{slug}/` via `aifs_copy` + delete-source (or move), and update the pointer's `location` path. Verify the new location before removing the old.
 - **Group:** set the node's `parent_id` (and `order`) in `tree.json`. Child docs reference the group by `group_id`, so they move logically for free; for public docs whose commons path includes the group name, relocate their folders to match (or, simpler and id-stable: keep folders flat-by-slug under the commons and treat the tree purely logically — follow whichever the implementation chose; the pointer `location` is authoritative either way).
 
 ### Step 4 — Write and verify

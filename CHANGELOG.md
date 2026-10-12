@@ -1,5 +1,10 @@
 ﻿# Changelog â€” Library
 
+## [1.7.1] — <RELEASE_DATE> — public docs carry their folder id
+
+### Fixed
+- **Public doc pointers carry `folder_id` (`publicptrid`, Dev Two live test finding 49).** create-doc 1.2.2, set-doc-visibility 1.2.1 and move-item 1.0.1 record the commons doc folder's Drive id next to the `location` path; find-doc 1.4.2 opens a public doc by `id:{folder_id}` and falls back to `id:{resource_ids.shared_root}/...` when the path doesn't resolve; find-doc's and review-report 1.2.1's ACL-drift checks skip public docs (their `folder_id` is the commons). Members on Google Drive often can't resolve `/shared/...` by path; the other tasks that open public docs by path follow the core rule (CLAUDE.md template, core 4.0.0): re-read a failed `/shared/...` path as `id:{resource_ids.shared_root}/...`.
+
 ## [1.7.0] — 2026-10-02 — Sharing and ownership transfer through the core permission-changes procedure
 
 **MINOR — requires agent-index-core 3.32.0.** Part of retiring the permission-change-helper (design record: `/shared/projects/core-improvements/artifacts/retire-permission-helper-*.md`).

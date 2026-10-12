@@ -1,7 +1,7 @@
 ---
 name: set-doc-visibility
 type: task
-version: 1.2.0
+version: 1.2.1
 collection: library
 description: Change a document's visibility and grants — make a public doc private, publish a private doc, or share/unshare a private doc with named members. Owns the title-leak warning (going private) and the strip/enrich rule (content-derived metadata exists in the catalog only while a doc is public). Private grants are applied by the owner through the core permission-changes procedure (owner confirms the exact changes; each verified; gated); no owner-bypass.
 stateful: true
@@ -51,7 +51,7 @@ Read setup responses and local `member-index.json` (`member_hash`, `member_folde
 
 ### Step 3B — Make public (private → public)
 1. **Relocate** the folder from the owner's My Drive into `{library_path}/{group-path}/{slug}/` using the **file-level relocation procedure** (see Directives). Once in the commons it inherits the `all@` reader+writer — additive, structural.
-2. **Enrich:** prompt the owner to confirm/supply `summary`, `tags`, and `type` (validate `type` against `doc-types.json`). Write them into `meta.json` and the pointer; set `scope: "org_public"`, replace `folder_id` with the commons `location` path. Write + verify.
+2. **Enrich:** prompt the owner to confirm/supply `summary`, `tags`, and `type` (validate `type` against `doc-types.json`). Write them into `meta.json` and the pointer; set `scope: "org_public"`, set `location` to the commons path **and `folder_id` to the commons folder's Drive id** (stat the new folder; `publicptrid`, finding 49 — members on Google Drive read public docs by id), and drop `item_drive_id` (the commons is the org drive). Write + verify.
 3. Any explicit grants still on the doc are now redundant (the doc is org-readable). Leave them, or, if the owner wants them gone, revoke them through `/agent-index-core/internal/permission-changes.md`: one `unshare` per grant read from a fresh `aifs_get_permissions` on the doc folder (`source: "current_state"`, `confirmer: "owner"`), the owner confirming each removal.
 4. Confirm: "`{title}` is now org-public and discoverable via '@ai:find-doc'."
 
