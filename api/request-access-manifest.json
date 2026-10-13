@@ -3,7 +3,7 @@
   "type": "task",
   "display_name": "Request Access",
   "collection": "library",
-  "collection_version": "1.6.1",
+  "collection_version": "1.7.1",
   "version": "1.0.0",
   "eol_date": null,
   "eol_warning_days": 60,
@@ -22,7 +22,8 @@
     "tasks": []
   },
   "external_dependencies": [
-    "Remote filesystem access"
+    "Remote filesystem access",
+    "Slack / Microsoft Teams / Discord / email (conditional): deliver the access-request notification via the org's configured channel"
   ],
   "optional_external_dependencies": [
     "Slack / Microsoft Teams / Discord / email"

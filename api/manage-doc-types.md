@@ -3,7 +3,7 @@ name: manage-doc-types
 type: task
 version: 1.0.0
 collection: library
-description: Admin capability to govern the document-type vocabulary: flip the policy between locked (admin-approved types only) and open (members may add types at creation), and add or remove types. Removing a type that is in use warns and lists affected docs rather than rewriting them.
+description: "Admin capability to govern the document-type vocabulary: flip the policy between locked (admin-approved types only) and open (members may add types at creation), and add or remove types. Removing a type that is in use warns and lists affected docs rather than rewriting them."
 stateful: true
 produces_artifacts: false
 produces_shared_artifacts: true

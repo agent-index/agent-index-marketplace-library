@@ -1,7 +1,7 @@
 ---
 name: library-collection-setup
 type: collection-setup
-version: 1.0.0
+version: 1.0.1
 collection: library
 description: Org-admin setup for the library collection — provisions the public-doc commons and the always-public catalog, seeds the taxonomy and the governed doc-type vocabulary, and configures default visibility, review cadence, and the access-request comms channel.
 upgrade_compatible: true
@@ -9,14 +9,14 @@ upgrade_compatible: true
 
 ## Collection Setup Overview
 
-This setup is run by an org admin when installing the library collection. It creates the two filesystem roots the library uses — the public-document commons (`/shared/library/`) and the always-org-public catalog (`/shared/library-index/`) — seeds an empty taxonomy and the starter doc-type vocabulary, and records org defaults (default visibility, review cadence). The additive collaborative grants in `collaborative-acls.json` are provisioned by `install-collection` Step 5.5 (admin Accepts).
+This setup is run by an org admin when installing the library collection. It creates the two filesystem roots the library uses — the public-document commons (`/shared/library/`) and the always-org-public catalog (`/shared/library-index/`) — seeds an empty taxonomy and the starter doc-type vocabulary, and records org defaults (default visibility, review cadence). The additive collaborative grants in `collaborative-acls.json` are provisioned by `install-collection` Step 5.5 (the admin confirms the exact changes in the core permission-changes procedure).
 
 ---
 
 ## Prerequisites
 
 - Remote filesystem access via `aifs_*` tools (test with `aifs_auth_status()`).
-- `permission-change-helper` binary 0.4.1+ available (members apply their own private-doc grants at runtime).
+- agent-index-core 3.32.0+ (members apply their own private-doc grants at runtime through the core permission-changes procedure).
 - The org's `org-config.json` should define the all-members group and, if access-request notifications are wanted, a comms channel (Slack / Teams / Discord / email).
 
 ---
@@ -27,13 +27,13 @@ This setup is run by an org admin when installing the library collection. It cre
 Remote filesystem path for the public-document commons.
 - Default: `/shared/library/`
 - Ask: "Where should public documents be stored on the remote filesystem? Default is '/shared/library/'. Every member can read and collaboratively edit docs here; private docs live in their owner's My Drive instead."
-- Setup creates this directory with the all-members reader+writer grant (via `collaborative-acls.json`).
+- Setup creates this directory; the all-members reader+writer grant (declared in `collaborative-acls.json`) is applied by `install-collection` Step 5.5.
 
 ### `library_index_path` [org-mandated]
 Remote filesystem path for the always-public catalog.
 - Default: `/shared/library-index/`
 - Ask: "Where should the library catalog (the public taxonomy + per-doc index) live? Default is '/shared/library-index/'. This is org-public to all members and holds the tree, one pointer per doc, and the doc-type vocabulary."
-- Setup creates this directory with the all-members writer grant and seeds `tree.json` and `doc-types.json`.
+- Setup creates this directory and seeds `tree.json` and `doc-types.json`; the all-members writer grant (declared in `collaborative-acls.json`) is applied by `install-collection` Step 5.5.
 
 ### `library_default_visibility` [org-mandated]
 Default visibility offered when a member creates a document.
@@ -98,3 +98,4 @@ How `request-access` notifies a private doc's owner.
 
 ### Migration Notes
 - v1.0.0 is the initial release. Greenfield install — no data migration. Future migration notes will be added here.
+- v1.0.1 (library 1.7.0): wording only — the collaborative grants are applied by `install-collection` Step 5.5 through the core permission-changes procedure, not by setup itself. No data migration.
