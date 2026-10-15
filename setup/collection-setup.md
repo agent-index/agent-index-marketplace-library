@@ -79,7 +79,7 @@ How `request-access` notifies a private doc's owner.
    { "policy": "{doc_type_policy}", "types": {doc_types} }
    ```
 6. Confirm the all-members reader+writer grant on `{library_path}/` and writer grant on `{library_index_path}/` are provisioned (these are declared in `collaborative-acls.json` and applied by `install-collection` Step 5.5 — verify via `aifs_get_permissions`, not the transcript).
-7. Write `collection-setup-responses.md` to `/setup/` with all configured parameters in YAML.
+7. Write `collection-setup-responses.md` to `/setup/` with all configured parameters, in the canonical setup-responses format (core `org-setup` Phase 4b step 8: frontmatter with `setup_status: complete`, then `## Org-Mandated Parameters` with one `### {param_name}` / `- **Value:**` block per parameter; JSON-encode `doc_types`) (finding 14).
 8. Confirm to admin: "Library is set up. Members can create groups and documents and browse with natural language ('what docs do we have', 'create a how-to under …'). Doc types are currently {doc_type_policy}. Default new-doc visibility is {library_default_visibility}; docs are flagged for review after {library_default_review_cadence_days} days."
 
 ---

@@ -1,5 +1,14 @@
 ﻿# Changelog â€” Library
 
+## [1.7.2] — <RELEASE_DATE> — grantee views and ownership transfers
+
+### Fixed (4.0.1 pass — OneDrive and Google Drive live tests)
+- **find-doc 1.4.3 and review-report 1.2.2 check a pointer's access only as the doc's owner (finding 71).** On OneDrive a grantee's permission read lists only the owner, so a non-owner's successful read is proof of access and nothing is flagged as stale.
+- **transfer-doc-ownership 1.2.1 explains where the doc lives after a transfer (finding 50):** the folder stays in the previous owner's private space, the new owner finds it under "Shared with me" or through the library, and the previous owner keeps edit access unless they remove it.
+- **`provides[]` no longer declares the undefined `documentation-library` capability type (finding 56).** upgrade-collection removes the stale registration.
+- Setup writes its responses in the canonical setup-responses format (finding 14).
+- **OneDrive reads org-public docs at the commons `location` path** (find-doc 1.4.3; create-doc 1.2.3 notes it), with only a drive-qualified id as fallback (finding 63).
+
 ## [1.7.1] — 2026-10-13 — public docs carry their folder id
 
 ### Fixed
