@@ -64,6 +64,10 @@ Ask for the doc type, presenting the configured `doc_types`. Validate against `d
 Remind, if the member offers a domain like "IT" or "Server Ops", that those are better as groups in the tree.
 
 ### Step 5 — Visibility (with the title-leak gate)
+**Duplicate-title check first (finding 88).** Scan the pointers in `{library_index_path}` for this `group_id` (every pointer, public or private, is visible to the caller — pointers are always org-public; skip `status: "archived"` / `"deleted"` ones) and compare titles case-insensitively, ignoring leading/trailing whitespace. If one matches, warn before going on:
+  > "There's already a doc titled `{existing title}` in `{group path}` ({public, or private — owned by {owner}}). Create another one with the same title, or give this one a distinct title?"
+Rename if the member chooses; otherwise continue. This is a warning, never a block. A rename made here, or at the title-leak notice below, is re-checked once.
+
 Offer the visibility choice per `library_default_visibility`.
 - **Public** (default under `org_public_first`): proceed to Step 6 public path.
 - **Private**: **render the blocking title-leak notice before writing anything**:
