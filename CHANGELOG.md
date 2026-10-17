@@ -2,7 +2,7 @@
 
 ## [1.7.3] — <RELEASE_DATE> — standards.md citation re-pointed
 
-Pairs with core 4.1.0, which retires `standards.md`: set-doc-visibility 1.2.2 cites core `runtime-reference.md` § "Addressing: Owned Content and Sharing" (soft-delete, convention 4). No behaviour change.
+Pairs with core 4.1.0, which retires `standards.md`: create-doc 1.2.4, find-doc 1.4.4 and set-doc-visibility 1.2.2 cite core `runtime-reference.md` § "Addressing: Owned Content and Sharing" (the backend read rule, finding 63; soft-delete, convention 4) and CLAUDE.md § "Reads go through aifs only". No behaviour change.
 
 ## [1.7.2] — 2026-10-17 — grantee views and ownership transfers
 
