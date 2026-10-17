@@ -1,6 +1,6 @@
 ﻿# Changelog — Library
 
-## [1.7.2] — <RELEASE_DATE> — grantee views and ownership transfers
+## [1.7.2] — 2026-10-17 — grantee views and ownership transfers
 
 ### Fixed (4.0.1 pass — OneDrive and Google Drive live tests)
 - **find-doc 1.4.3 and review-report 1.2.2 check a pointer's access only as the doc's owner (finding 71).** On OneDrive a grantee's permission read lists only the owner, so a non-owner's successful read is proof of access and nothing is flagged as stale.
