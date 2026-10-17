@@ -1,5 +1,9 @@
 ﻿# Changelog — Library
 
+## [1.7.3] — <RELEASE_DATE> — standards.md citation re-pointed
+
+Pairs with core 4.1.0, which retires `standards.md`: set-doc-visibility 1.2.2 cites core `runtime-reference.md` § "Addressing: Owned Content and Sharing" (soft-delete, convention 4). No behaviour change.
+
 ## [1.7.2] — 2026-10-17 — grantee views and ownership transfers
 
 ### Fixed (4.0.1 pass — OneDrive and Google Drive live tests)

@@ -1,7 +1,7 @@
 ---
 name: set-doc-visibility
 type: task
-version: 1.2.1
+version: 1.2.2
 collection: library
 description: Change a document's visibility and grants — make a public doc private, publish a private doc, or share/unshare a private doc with named members. Owns the title-leak warning (going private) and the strip/enrich rule (content-derived metadata exists in the catalog only while a doc is public). Private grants are applied by the owner through the core permission-changes procedure (owner confirms the exact changes; each verified; gated); no owner-bypass.
 stateful: true
@@ -92,7 +92,7 @@ Read setup responses and local `member-index.json` (`member_hash`, `member_folde
 - Never write `scope: "revoked"` from declined or cancelled rows — only when a fresh `aifs_get_permissions` read shows no explicit grants other than the owner.
 - Verify relocations (destination present and complete; source **stubbed** when going private, removed when going public) before updating `location` / `folder_id`.
 - **File-level relocation procedure** (going private and going public both use it): `aifs_copy` copies ONE file and will NOT create the destination's parent folder. So to move a doc folder across the commons ↔ My-Drive boundary: (1) create the destination folder (e.g. `aifs_write` a placeholder, or write the first file); (2) `aifs_copy` each file in turn (`doc.md`, `meta.json`, `assets/*`) into that new folder; (3) verify every file landed (stat / read-back) at the destination; (4) only then retire the source -- never touch the source before the destination is confirmed complete:
-  - **Going private (source in the commons, Shared Drive):** never delete — non-admin members can't (soft-delete convention, standards.md § Addressing, convention 4). **Overwrite** each source file as a moved stub: `doc.md` → a one-line "This document has moved; find it via the library index" note; `meta.json` → `{"id": "{id}", "status": "moved", "moved_at": "{ISO-8601}"}` (no title-derived or content-derived fields beyond `id`); each `assets/*` file → an empty placeholder. Then **verify the source is stubbed** (read back each file; no original content remains).
+  - **Going private (source in the commons, Shared Drive):** never delete — non-admin members can't (soft-delete convention, core runtime-reference.md § "Addressing: Owned Content and Sharing", convention 4). **Overwrite** each source file as a moved stub: `doc.md` → a one-line "This document has moved; find it via the library index" note; `meta.json` → `{"id": "{id}", "status": "moved", "moved_at": "{ISO-8601}"}` (no title-derived or content-derived fields beyond `id`); each `assets/*` file → an empty placeholder. Then **verify the source is stubbed** (read back each file; no original content remains).
   - **Going public (source in the owner's My Drive):** the owner may delete their own space, so remove the source folder and verify it's gone.
 <!-- RECONSTRUCTED 2026-07-22: (2)-(4) of the relocation procedure were lost to a torn-write at b817e21 (bug tornwritefiledamage); completed from the bullet's own aifs_copy-one-file context, pending Bill's review. -->
 
