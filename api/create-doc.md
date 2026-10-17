@@ -1,7 +1,7 @@
 ---
 name: create-doc
 type: task
-version: 1.2.3
+version: 1.2.4
 collection: library
 description: Create a document in the library — org-public by default (the /shared/library/ commons) or private (the owner's My Drive, content gated to owner + grants). Files the doc under a chosen group, validates its type against the governed vocabulary, and writes the always-public catalog pointer (enriched metadata for public docs only). Going private surfaces the title-leak warning.
 stateful: true
@@ -91,7 +91,7 @@ Build `meta.json` (and the matching pointer fields):
 
 ### Step 7 — Write the catalog pointer (same operation)
 Write the pointer at `{library_index_path}/{id}-{doc-slug}.json` — **keyed on the doc's stable intrinsic `id`, never on `owner_hash`** (bug `libownerxfer`). The `id` never changes when ownership, visibility, or location changes, so every later pointer update is an **in-place content rewrite at the same filename** — never a create-new-plus-delete-old rename. This matters because Shared-Drive *contributors* (members) cannot trash index files, so an owner-keyed filename forces a rename that strands an **undeletable duplicate pointer** on any ownership transfer. Keep `owner`/`owner_hash` as *fields* inside the pointer, not in the filename.
-- **Public** → full pointer **with** enriched fields (`type`, `tags`, `summary`) + `location` = the commons path, **plus `folder_id`** = the commons doc folder's Drive id (`aifs_stat` after writing) — members on Google Drive often can't resolve `/shared/...` by path, so readers open a public doc by `id:{folder_id}` (`publicptrid`, core 4.0.0 live test finding 49). On OneDrive readers use the `location` path instead (a bare `id:` resolves against the reader's own drive — core standards § Addressing, finding 63).
+- **Public** → full pointer **with** enriched fields (`type`, `tags`, `summary`) + `location` = the commons path, **plus `folder_id`** = the commons doc folder's Drive id (`aifs_stat` after writing) — members on Google Drive often can't resolve `/shared/...` by path, so readers open a public doc by `id:{folder_id}` (`publicptrid`, core 4.0.0 live test finding 49). On OneDrive readers use the `location` path instead (a bare `id:` resolves against the reader's own drive — core runtime-reference.md § "Addressing: Owned Content and Sharing", finding 63).
 - **Private** → pointer **without** `type`/`tags`/`summary`; include `id`, `title`, `group_id`, `owner`, `owner_hash`, `scope: "private"`, lifecycle dates, and `folder_id` **plus `item_drive_id`** — `aifs_stat` the doc folder once and record both its `id` (→ `folder_id`) and `drive_id` (→ `item_drive_id`, adapter 2.3.0+) — instead of a `/shared` path. `item_drive_id` lets a future grantee open the doc cross-drive (C.1.3 `crossdriveread`); it costs nothing now and avoids a re-stat at share time.
 JSON-parse-verify after writing. If the pointer write fails after the content write, surface loudly and retry — do not leave the doc un-indexed.
 
