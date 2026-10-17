@@ -1,7 +1,7 @@
 ---
 name: transfer-doc-ownership
 type: task
-version: 1.2.0
+version: 1.2.1
 collection: library
 description: Transfer ownership of a library document to another member, performing the Drive ownership change AND the catalog bookkeeping atomically. Routes "make X the owner of doc Y" here — never as a bare ownership change (which knows nothing about the catalog and leaves the pointer stale). The pointer is rewritten in place (it is keyed on the doc's stable id, so ownership transfer is never a rename), so it never creates an undeletable duplicate. gdrive only — ownership transfer is NOT_IMPLEMENTED on OneDrive/SharePoint (ownership is drive/site-level).
 stateful: true
@@ -51,7 +51,7 @@ Read setup responses and local `member-index.json` (`member_hash`, `member_folde
    - `calling_task: "transfer-doc-ownership"`, `confirmer: "owner"`
    - one change: `op: "transfer_ownership"` on resource **`id:{folder_id}`** (the bare Drive ID, NOT a path) to the new owner's `sharing_identity`, `resource_label` "Doc '{title}'", `source: "member_request"`
 
-   The **current owner confirms** in chat (an ownership transfer is always confirmed individually). Google then emails the **new owner, who must accept** in Google Drive; that consent happens outside agent-index. The transfer covers the doc folder and its contents (`doc.md`, `meta.json`, `assets/*`) as the adapter's transfer covers.
+   The **current owner confirms** in chat (an ownership transfer is always confirmed individually). Before they confirm, tell them where the doc will live (finding 50): "The doc folder stays where it is, inside your private space — Drive moves the ownership, not the folder. {new_owner} will find it under 'Shared with me' in Drive, or through the library. You'll keep edit access through your space unless you remove it afterwards." Google then emails the **new owner, who must accept** in Google Drive; that consent happens outside agent-index. The transfer covers the doc folder and its contents (`doc.md`, `meta.json`, `assets/*`) as the adapter's transfer covers.
 3. **Gate on the row state.** Never write the catalog before it passes.
    - **`applied`** (the backend shows the new owner) or **`skipped_noop`** (the new owner already owns it, e.g. a re-run after they accepted) → Step 4.
    - **`awaiting_recipient`** → the new owner hasn't accepted yet. Do NOT touch the catalog (it still correctly records the current owner). Tell the owner: "I've asked Google Drive to transfer `{title}` to {new_owner}. They'll get an email to accept. Once they do, run this again and I'll update the library catalog." Stop.
@@ -59,13 +59,13 @@ Read setup responses and local `member-index.json` (`member_hash`, `member_folde
 
 ### Step 4 — Catalog bookkeeping (in place, atomic with the transfer)
 Only after the gate passes:
-1. **Re-stat** the doc folder — a transferred private doc may now live in the new owner's My Drive, so its `drive_id` can change. Capture the fresh `id` (`folder_id`) and `drive_id` (`item_drive_id`).
+1. **Re-stat** the doc folder — the folder stays parented in the previous owner's space, but its `drive_id` can still change with the owner. Capture the fresh `id` (`folder_id`) and `drive_id` (`item_drive_id`).
 2. **Rewrite the pointer in place at its existing path** (found in Step 1 by `id`): set `owner` = new owner email, `owner_hash` = new owner hash, refresh `item_drive_id`/`folder_id`, bump `updated`. Do **not** change `id`, `title`, `scope`, `group_id`, or the filename. JSON-parse-verify.
    - **Legacy pointer (old `{owner_hash}-{slug}.json` filename):** still rewrite the content **in place at that filename** — do NOT rename it (a rename needs a delete the member can't do). Note that the filename is cosmetically stale and flag it for admin migration via `@ai:review-report`. Never create a second pointer.
 3. **Update `meta.json`** owner/owner_hash to match (via `aifs_write` at the resolved doc location). Verify.
 
 ### Step 5 — Confirm
-"Ownership of `{title}` transferred to {new_owner}. The catalog and doc metadata now record {new_owner} as owner." If a legacy filename was left in place, add: "(An admin can tidy the catalog filename with `@ai:review-report`; the entry itself is correct.)"
+"Ownership of `{title}` transferred to {new_owner}. The catalog and doc metadata now record {new_owner} as owner." Then explain where it lives, for both people (finding 50): "The doc folder is still inside {previous_owner}'s private space — Drive moved the ownership, not the folder. {new_owner}: you'll find it under 'Shared with me' in Drive, or through the library ('find {title}'). {previous_owner}: you still have edit access through your space; remove it from your space if you don't want that." If a legacy filename was left in place, add: "(An admin can tidy the catalog filename with `@ai:review-report`; the entry itself is correct.)"
 
 ---
 
@@ -77,6 +77,7 @@ Only after the gate passes:
 - Use `aifs_*` for all remote ops; JSON-parse-verify every catalog write.
 - gdrive-only; onedrive returns cleanly at Step 2. `org_public` docs (Shared-Drive-owned) also stop at Step 2 — never attempt a transfer on them.
 - The new owner must be a `members-registry.json` member (the catalog needs their `owner_hash`).
+- **The folder doesn't move (finding 50).** Drive keeps the doc folder parented in the previous owner's private space after a transfer, so the previous owner keeps writer access by inheritance and the new owner sees the doc under "Shared with me". This task leaves it there and says so in the Step 3 confirmation and the Step 5 result. Never move the folder as part of a transfer.
 
 ---
 
